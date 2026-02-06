@@ -9,15 +9,15 @@ pipeline {
             }
         }
 
-        stage('Build Containers') {
+        stage('Build Docker Images') {
             steps {
-                sh 'docker-compose build'
+                bat 'docker-compose build'
             }
         }
 
-        stage('Run Services') {
+        stage('Start Containers') {
             steps {
-                sh 'docker-compose up -d'
+                bat 'docker-compose up -d'
             }
         }
     }

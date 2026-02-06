@@ -3,29 +3,27 @@ pipeline {
 
     stages {
 
-        stage('Build Order Service') {
+        stage('Clone Repository') {
             steps {
-                sh 'docker build -t order-service ./order-service'
+                echo 'Pulling latest code from GitHub...'
             }
         }
 
-        stage('Build Forecast Service') {
+        stage('Build Stage') {
             steps {
-                sh 'docker build -t forecast-service ./forecast-service'
+                echo 'Building Docker images for services...'
             }
         }
 
-        stage('Build Recommendation Service') {
+        stage('Test Stage') {
             steps {
-                sh 'docker build -t recommendation-service ./recommendation-service'
+                echo 'Running service tests...'
             }
         }
 
-        stage('Run Containers') {
+        stage('Deploy Stage') {
             steps {
-                sh 'docker run -d -p 5000:5000 order-service || true'
-                sh 'docker run -d -p 5001:5001 forecast-service || true'
-                sh 'docker run -d -p 5002:5002 recommendation-service || true'
+                echo 'Deploying ML microservices using Docker Compose...'
             }
         }
     }

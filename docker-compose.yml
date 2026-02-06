@@ -1,0 +1,22 @@
+version: '3.9'
+
+services:
+
+  order-service:
+    build: ./order-service
+    ports:
+      - "5000:5000"
+
+  forecast-service:
+    build: ./forecast-service
+    ports:
+      - "5001:5001"
+    depends_on:
+      - order-service
+
+  recommendation-service:
+    build: ./recommendation-service
+    ports:
+      - "5002:5002"
+    depends_on:
+      - order-service

@@ -1,15 +1,46 @@
-from flask import Flask, jsonify
+from flask_cors import CORS
+from flask import Flask, jsonify, request
 from config import get_db_connection
 from faker import Faker
 import random
 from datetime import datetime, timedelta
 
 app = Flask(__name__)
+CORS(app)
+
 fake = Faker()
 
 @app.route('/')
 def home():
     return "Order Service + PostgreSQL Connected!"
+
+
+
+@app.route('/order', methods=['POST'])
+def place_order():
+    data = request.json
+
+    user_id = data.get("user_id")
+    product_id = data.get("product_id")
+    quantity = data.get("quantity")
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        INSERT INTO orders (user_id, product_id, quantity, order_date)
+        VALUES (%s, %s, %s, NOW())
+        """,
+        (user_id, product_id, quantity)
+    )
+
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    return jsonify({"message": "Order placed successfully!"})
+
 
 @app.route('/generate-data')
 def generate_data():
@@ -43,7 +74,6 @@ def generate_data():
         product_id = random.choice(products)
         quantity = random.randint(1, 5)
 
-        # Random date in last 60 days
         random_days = random.randint(0, 60)
         order_date = datetime.now() - timedelta(days=random_days)
 
@@ -60,6 +90,7 @@ def generate_data():
     conn.close()
 
     return jsonify({"message": "Dummy data generated successfully!"})
+
 
 @app.route('/sales-summary')
 def sales_summary():
@@ -128,7 +159,6 @@ def daily_sales():
     return {"daily_sales": data}
 
 
-
 @app.route('/orders-data')
 def orders_data():
     conn = get_db_connection()
@@ -150,9 +180,6 @@ def orders_data():
     ]
 
     return {"orders": data}
-
-
-
 
 
 if __name__ == '__main__':

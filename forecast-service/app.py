@@ -2,19 +2,20 @@ from flask import Flask, jsonify
 import joblib
 import requests
 import pandas as pd
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
-# Load trained model
 model = joblib.load("model/forecast_model.pkl")
 
 @app.route('/')
 def home():
     return "Forecast Service Running"
 
+# Keep existing route
 @app.route('/predict')
 def predict():
-    # Get latest daily sales data
     response = requests.get("http://host.docker.internal:5000/daily-sales")
     data = response.json()["daily_sales"]
 
@@ -26,7 +27,6 @@ def predict():
 
     predictions = []
 
-    # Predict next 7 days
     for i in range(1, 8):
         future_day = last_day + i
         predicted_sales = model.predict([[future_day]])[0]
@@ -38,6 +38,10 @@ def predict():
 
     return jsonify({"forecast": predictions})
 
+# 👇 ADD THIS (alias route for UI)
+@app.route('/forecast')
+def forecast():
+    return predict()
+
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5001)
-

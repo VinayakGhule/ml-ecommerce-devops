@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>ML E-Commerce AI Dashboard</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #f8fafc, #e0f2fe);
+    color: #0f172a;
+}
+
+/* HEADER */
+.header {
+    padding: 40px 20px;
+    text-align: center;
+    background: linear-gradient(90deg, #3b82f6, #6366f1);
+    color: white;
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 36px;
+    font-weight: 700;
+}
+
+.header p {
+    margin-top: 10px;
+    opacity: 0.9;
+}
+
+/* METRICS */
+.metrics {
+    display: flex;
+    gap: 25px;
+    padding: 25px 30px;
+}
+
+.metric {
+    flex: 1;
+    background: white;
+    padding: 25px;
+    border-radius: 18px;
+    text-align: center;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+
+.metric p {
+    color: #64748b;
+    margin-bottom: 10px;
+}
+
+.metric h3 {
+    margin: 0;
+    font-size: 32px;
+    color: #2563eb;
+}
+
+/* MAIN CARDS */
+.container {
+    display: flex;
+    gap: 30px;
+    padding: 30px;
+}
+
+.card {
+    flex: 1;
+    background: white;
+    padding: 30px;
+    border-radius: 18px;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.08);
+    transition: 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+}
+
+.card h2 {
+    margin-bottom: 20px;
+}
+
+/* INPUTS */
+input {
+    width: 100%;
+    padding: 14px;
+    margin-bottom: 14px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    font-size: 15px;
+    box-sizing: border-box;
+}
+
+/* BUTTON */
+button {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-weight: bold;
+    font-size: 15px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+button:hover {
+    transform: scale(1.03);
+}
+
+/* OUTPUT BOX */
+.output {
+    margin-top: 18px;
+    background: #f1f5f9;
+    padding: 15px;
+    border-radius: 12px;
+    min-height: 60px;
+    border: 1px solid #e2e8f0;
+}
+
+/* Chart container */
+canvas {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 10px;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="header">
+    <h1>ML E-Commerce AI Dashboard</h1>
+    <p>AI Forecasting • Smart Recommendations • Microservices • DevOps</p>
+</div>
+
+<!-- LIVE METRICS -->
+<div class="metrics">
+    <div class="metric">
+        <p>Total Orders</p>
+        <h3 id="ordersCount">--</h3>
+    </div>
+    <div class="metric">
+        <p>Total Revenue</p>
+        <h3 id="revenue">--</h3>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- ORDER -->
+    <div class="card">
+        <h2>Place Order</h2>
+
+        <input id="userId" placeholder="User ID">
+        <input id="productId" placeholder="Product ID">
+        <input id="qty" placeholder="Quantity">
+
+        <button onclick="placeOrder()">Submit Order</button>
+
+        <div class="output" id="orderResult"></div>
+    </div>
+
+    <!-- RECOMMENDATION -->
+    <div class="card">
+        <h2>Recommendations</h2>
+
+        <input id="recUser" placeholder="User ID">
+        <button onclick="getRecommendations()">Get Products</button>
+
+        <div class="output" id="recResult"></div>
+    </div>
+
+    <!-- FORECAST -->
+    <div class="card">
+        <h2>Sales Forecast</h2>
+
+        <button onclick="getForecast()">Predict Next 7 Days</button>
+
+        <canvas id="chart" height="160"></canvas>
+    </div>
+
+</div>
+
+<script>
+let chart;
+
+/* LOAD LIVE METRICS */
+async function loadStats() {
+    const res = await fetch("http://localhost:5000/sales-summary");
+    const data = await res.json();
+
+    document.getElementById("ordersCount").innerText = data.total_orders;
+    document.getElementById("revenue").innerText = "₹ " + data.total_revenue.toFixed(0);
+}
+loadStats();
+
+/* PLACE ORDER */
+async function placeOrder() {
+    const user = document.getElementById("userId").value;
+    const product = document.getElementById("productId").value;
+    const quantity = document.getElementById("qty").value;
+
+    await fetch("http://localhost:5000/order", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({
+            user_id: user,
+            product_id: product,
+            quantity: quantity
+        })
+    });
+
+    document.getElementById("orderResult").innerText = "Order placed successfully!";
+    loadStats();
+}
+
+
+/* RECOMMEND */
+async function getRecommendations() {
+    const user = recUser.value;
+
+    const res = await fetch(`http://localhost:5002/recommend/${user}`);
+    const data = await res.json();
+
+    recResult.innerText =
+        "Products: " + data.recommended_products.join(", ");
+}
+
+
+/* FORECAST CHART */
+async function getForecast() {
+    const res = await fetch("http://localhost:5001/predict");
+    const data = await res.json();
+
+    const labels = data.forecast.map(x => "Day " + x.day_offset);
+    const values = data.forecast.map(x => x.predicted_sales);
+
+    if (chart) chart.destroy();
+
+    chart = new Chart(document.getElementById('chart'), {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Predicted Sales',
+                data: values,
+                tension: 0.4
+            }]
+        }
+    });
+}
+</script>
+
+</body>
+</html>

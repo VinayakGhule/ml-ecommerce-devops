@@ -194,7 +194,7 @@ let chart;
 
 /* LOAD LIVE METRICS */
 async function loadStats() {
-    const res = await fetch("http://localhost:5000/sales-summary");
+    const res = await fetch("https://ml-ecommerce-devops.onrender.com/sales-summary");
     const data = await res.json();
 
     document.getElementById("ordersCount").innerText = data.total_orders;
@@ -208,7 +208,7 @@ async function placeOrder() {
     const product = document.getElementById("productId").value;
     const quantity = document.getElementById("qty").value;
 
-    await fetch("http://localhost:5000/order", {
+    await fetch("https://ml-ecommerce-devops.onrender.com/order", {
         method: "POST",
         headers: {"Content-Type":"application/json"},
         body: JSON.stringify({
@@ -227,7 +227,7 @@ async function placeOrder() {
 async function getRecommendations() {
     const user = recUser.value;
 
-    const res = await fetch(`http://localhost:5002/recommend/${user}`);
+    const res = await fetch(`https://ml-ecommerce-devops-3.onrender.com/recommend/${user}`);
     const data = await res.json();
 
     recResult.innerText =
@@ -237,7 +237,7 @@ async function getRecommendations() {
 
 /* FORECAST CHART */
 async function getForecast() {
-    const res = await fetch("http://localhost:5001/predict");
+    const res = await fetch("https://ml-ecommerce-devops-4.onrender.com/predict");
     const data = await res.json();
 
     const labels = data.forecast.map(x => "Day " + x.day_offset);

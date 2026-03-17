@@ -1,10 +1,12 @@
 import requests
 import pandas as pd
+import os
 from sklearn.linear_model import LinearRegression
 import joblib
 
 # Get data from order service
-response = requests.get("http://127.0.0.1:5000/daily-sales")
+order_service_url = os.getenv("ORDER_SERVICE_URL", "http://127.0.0.1:5000")
+response = requests.get(f"{order_service_url}/daily-sales")
 data = response.json()["daily_sales"]
 
 df = pd.DataFrame(data)

@@ -1,0 +1,51 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ml-postgres
+    environment:
+      POSTGRES_DB: ml_ecommerce
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    restart: unless-stopped
+
+  order-service:
+    build: ./order-service
+    container_name: order-service
+    environment:
+      DB_HOST: postgres
+      DB_NAME: ml_ecommerce
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+    ports:
+      - "5000:5000"
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  forecast-service:
+    build: ./forecast-service
+    container_name: forecast-service
+    environment:
+      ORDER_SERVICE_URL: http://order-service:5000
+    ports:
+      - "5001:5001"
+    depends_on:
+      - order-service
+    restart: unless-stopped
+
+  recommendation-service:
+    build: ./recommendation-service
+    container_name: recommendation-service
+    ports:
+      - "5002:5002"
+    depends_on:
+      - order-service
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

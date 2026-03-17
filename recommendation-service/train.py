@@ -1,9 +1,11 @@
 import requests
 import pandas as pd
 import joblib
+import os
 
 # Get order data
-response = requests.get("http://host.docker.internal:5000/orders-data")
+order_service_url = os.getenv("ORDER_SERVICE_URL", "http://127.0.0.1:5000")
+response = requests.get(f"{order_service_url}/orders-data")
 orders = response.json()["orders"]
 
 df = pd.DataFrame(orders)

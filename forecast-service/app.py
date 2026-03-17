@@ -1,5 +1,6 @@
 from flask import Flask, jsonify
 import joblib
+import os
 import requests
 import pandas as pd
 from flask_cors import CORS
@@ -8,6 +9,7 @@ app = Flask(__name__)
 CORS(app)
 
 model = joblib.load("model/forecast_model.pkl")
+ORDER_SERVICE_URL = os.getenv("ORDER_SERVICE_URL", "http://order-service:5000")
 
 @app.route('/')
 def home():
@@ -16,7 +18,7 @@ def home():
 # Keep existing route
 @app.route('/predict')
 def predict():
-    response = requests.get("http://host.docker.internal:5000/daily-sales")
+    response = requests.get(f"{ORDER_SERVICE_URL}/daily-sales")
     data = response.json()["daily_sales"]
 
     df = pd.DataFrame(data)

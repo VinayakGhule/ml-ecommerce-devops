@@ -225,15 +225,14 @@ async function placeOrder() {
 
 /* RECOMMEND */
 async function getRecommendations() {
-    const user = recUser.value;
+    const user = document.getElementById("recUser").value;
 
     const res = await fetch(`https://ml-ecommerce-devops-3.onrender.com/recommend/${user}`);
     const data = await res.json();
 
-    recResult.innerText =
+    document.getElementById("recResult").innerText =
         "Products: " + data.recommended_products.join(", ");
 }
-
 
 /* FORECAST CHART */
 async function getForecast() {
